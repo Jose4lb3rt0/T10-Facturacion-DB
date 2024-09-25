@@ -25,19 +25,27 @@
 
             $total = 0;
             foreach($items as $item){
-                $producto_id = $item['producto'];
-                $cantidad = $item['cantidad'];
-
-                $producto = $productoDB->obtenerProducto($producto_id);
-                $total += $producto->getPrecio() * $cantidad;
+                if (isset($item['producto'])){
+                    $producto_id = $item['producto'];
+                    $cantidad = $item['cantidad'];
+                    
+                    $producto = $productoDB->obtenerProducto($producto_id);
+                    if ($producto) {
+                        $total += $producto->getPrecio() * $cantidad;
+                    }
+                }
             }
             
-            $factura_id = $facturaDB->crearFactura($cliente_id, $total);
-            
-            foreach ($items as $item){
-                $producto_id = $item['producto'];
-                $cantidad = $item['cantidad'];
-                $facturaDB->agregarProductoAFactura($factura_id, $producto_id, $cantidad);
+            if ($total > 0) {
+                $factura_id = $facturaDB->crearFactura($cliente_id, $total);
+                
+                foreach ($items as $item){
+                    if (isset($item['producto'])) {
+                        $producto_id = $item['producto'];
+                        $cantidad = $item['cantidad'];
+                        $facturaDB->agregarProductoAFactura($factura_id, $producto_id, $cantidad);
+                    }
+                }
             }
         }
     }
@@ -150,10 +158,17 @@
                                     <td class="py-2 px-4">
                                         <?php $productos = $facturaDB->obtenerProductosDeFactura($factura['id']); ?>
                                         <?php foreach ($productos as $item): ?>
-                                            <?php $producto = $productoDB->obtenerProducto($item['producto_id']); ?>
-                                            <?php echo '- ' . $producto->getNombre(); ?> (x <?php echo $item['cantidad']; ?>)<br>
+                                            <?php 
+                                            $producto = $productoDB->obtenerProducto($item['producto_id']); 
+                                            if ($producto): 
+                                            ?>
+                                                <?php echo '- ' . $producto->getNombre(); ?> (x <?php echo $item['cantidad']; ?>)<br>
+                                            <?php else: ?>
+                                                <?php echo '- Producto no encontrado'; ?><br>
+                                            <?php endif; ?>
                                         <?php endforeach; ?>
                                     </td>
+
                                     <td class="py-2 px-4">S/ <?= number_format($factura['total'], 2); ?></td>
                                     <td class="py-2 px-4 text-center">
                                         <form action="" method="POST">
