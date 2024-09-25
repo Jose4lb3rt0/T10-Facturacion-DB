@@ -4,8 +4,6 @@
     require_once '../db.php';
     
     class ClienteDB {
-        protected $dni;
-        protected $telefono;
         private $conexion;
 
         public function __construct($conexion){

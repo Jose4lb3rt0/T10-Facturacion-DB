@@ -1,28 +1,27 @@
 <?php
     require_once '../clases/cliente.php'; 
     require_once '../clases/producto.php';
+    require_once '../db/ProductoDB.php';
     require_once '../clases/factura.php'; 
     require 'layout.php';
 
-    if (!isset($_SESSION['productos'])) {
-        $_SESSION['productos'] = [];
-    }
+    $productoDB = new ProductoDB($conexion);
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['eliminar'])) {
-        $nombre = $_POST['nombre'];
-        $precio = $_POST['precio'];
-    
-        $producto = new Producto($nombre, $precio);
-        $_SESSION['productos'][] = $producto;
-    }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
-    if (isset($_POST['eliminar'])) {
-        $index = $_POST['index'];
-        if (isset($_SESSION['productos'][$index])) {
-            unset($_SESSION['productos'][$index]);
-            $_SESSION['productos'] = array_values($_SESSION['productos']);
+        if (isset($_POST['eliminar'])){
+            $productoDB->eliminarProducto($_POST['eliminar']);
+        } else if (isset($_POST['nombre']) && isset($_POST['precio'])){
+            $nombre = $_POST['nombre'];
+            $precio = $_POST['precio'];
+
+            $producto = new Producto($nombre, $precio);
+            $productoDB->agregarProducto($producto);
         }
     }
+    
+    $productos = $productoDB->obtenerProductos();
+
 ?>
 
 <body>
@@ -57,30 +56,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (!empty($_SESSION['productos'])): ?>
-                            <?php foreach ($_SESSION['productos'] as $index => $producto): ?>
-                                <tr class="border-b">
-                                    <td class="py-2 px-4 text-center">
-                                        <?php echo $producto->getNombre(); ?>
-                                    </td>
-                                    <td class="py-2 px-4 text-center">
-                                        <?php echo 'S/ ' . $producto->getPrecio(); ?>
-                                    </td>
-                                    <td class="py-2 px-4 text-center flex items-center justify-center">
-                                        <form method="POST" action="" >
-                                            <input type="hidden" name="index" value="<?= $index; ?>">
-                                            <button type="submit" name="eliminar" class="bg-red-500 text-white font-semibold p-3 rounded-lg hover:bg-red-600 focus:outline-none">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                        <?php foreach ($productos as $producto): ?>
                             <tr class="border-b">
-                                <td class="py-2 px-4 text-center" colspan="4" class="text-center">No hay productos agregados.</td>
+                                <td class="py-2 px-4 text-center">
+                                    <?php echo $producto['nombre']; ?>
+                                </td>
+                                <td class="py-2 px-4 text-center">
+                                    <?php echo 'S/ ' . $producto['precio']; ?>
+                                </td>
+                                <td class="py-2 px-4 text-center flex items-center justify-center">
+                                    <form method="POST" action="" >
+                                        <input type="hidden" name="eliminar" value="<?= $producto['id']; ?>">
+                                        <button type="submit" class="bg-red-500 text-white font-semibold p-3 rounded-lg hover:bg-red-600 focus:outline-none">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
