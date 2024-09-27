@@ -56,17 +56,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($productos as $producto): ?>
+                        <?php foreach ($productos as $producto_id => $producto): ?>
                             <tr class="border-b">
                                 <td class="py-2 px-4 text-center">
-                                    <?php echo $producto['nombre']; ?>
+                                    <?php echo $producto->getNombre(); ?>
                                 </td>
                                 <td class="py-2 px-4 text-center">
-                                    <?php echo 'S/ ' . $producto['precio']; ?>
+                                    <?php echo 'S/ ' . $producto->getPrecio(); ?>
                                 </td>
                                 <td class="py-2 px-4 text-center flex items-center justify-center">
                                     <form method="POST" action="" >
-                                        <input type="hidden" name="eliminar" value="<?= $producto['id']; ?>">
+                                        <input type="hidden" name="eliminar" value="<?= $producto_id; ?>">
                                         <button type="submit" class="bg-red-500 text-white font-semibold p-3 rounded-lg hover:bg-red-600 focus:outline-none">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
